@@ -1,37 +1,57 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import StopMessage from './StopMessage'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import { Button } from 'react-bootstrap'
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import InputGroup from 'react-bootstrap/InputGroup';
+import Image from 'react-bootstrap/Image';
+
 
 function App() {
-  // react hooks
-  const [count, setCount] = useState(0)
+    const [input, userInput]=useState("")
+
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <StopMessage count={count} />
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    
+      <Container  fluid>
+        <Row style={{minHeight:"100vh", margin:0 }} >
+          
+        <Col sm={3} style={{borderRightStyle:"solid", } }>
+        <Button style={{margin:10}} >Викторина</Button>
+        <Button style={{backgroundColor:'orange' }}>Изплюй интересен исторически факт</Button>
+        <h3 style={{textAlign:'left', paddingTop:10}}>Разговори</h3>
+        </Col>
+        
+
+        <Col sm={9} style={{justifyContent:'center', alignItems:'center', display:'flex', flexDirection:'column', height:'100vh'}}>
+        <div style={{textAlign:'center', width:'80%'}}>
+        <Image src="\public\botev.png" width="50%"  />
+        <InputGroup className="mb-3">
+        <Form.Control 
+          rows={4}
+          cols={100}
+          as="textarea" 
+          value={input}
+          onChange={(e)=>userInput(e.target.value)}
+          placeholder='Здравей, аз съм Христо Ботев. Готов ли си да научиш за борбата за свободата?'
+          
+        />
+        <Button variant="primary" onClick={()=>console.log(userInput)} >
+          Изпрати
+        </Button>
+      </InputGroup>
+        </div>
+        </Col>
+        
+        </Row>
+        
+        
+        
+       </Container>
+    
   )
 }
 

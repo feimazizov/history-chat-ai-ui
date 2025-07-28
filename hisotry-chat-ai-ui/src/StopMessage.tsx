@@ -1,5 +1,6 @@
 export default function StopMessage({ count }: { count: number }) {
     return (<div>
+        
         {
             count > 5 &&
             <>Stop!</>
