@@ -1,31 +1,21 @@
 import { useState } from 'react'
-import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { Button } from 'react-bootstrap'
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
-import InputGroup from 'react-bootstrap/InputGroup';
-import Image from 'react-bootstrap/Image';
-
+import './App.css' 
+import { Button, Container, Row, Col, Form, InputGroup, Image } from 'react-bootstrap';
 
 function App() {
     const [input, setUserInput]=useState("")
-
-
   return (
     
       <Container  fluid>
         <Row style={{minHeight:"100vh", margin:0 }} >
           
-        <Col sm={3} style={{borderRightStyle:"solid", } }>
-        <Button style={{margin:10}} >Викторина</Button>
-        <Button style={{backgroundColor:'orange' }}>Изплюй интересен исторически факт</Button>
+        <Col sm={3} style={{borderRightStyle:"solid", alignItems:"center"} }>
+        <Button style={{ margin:"10px 0px",width:"100%" }} >Викторина</Button>
+        <Button style={{backgroundColor:'orange', width:"100%" }}>Изплюй интересен исторически факт</Button>
         <h3 style={{textAlign:'left', paddingTop:10}}>Разговори</h3>
         </Col>
         
-
         <Col sm={9} style={{justifyContent:'center', alignItems:'center', display:'flex', flexDirection:'column', height:'100vh'}}>
         <div style={{textAlign:'center', width:'80%'}}>
         <Image src="\public\botev.png" width="50%"  />
@@ -47,8 +37,6 @@ function App() {
         </Col>
         
         </Row>
-        
-        
         
        </Container>
     
