@@ -8,13 +8,15 @@ function App() {
 
   return (
 
-    <Container fluid style={{height:"100vh"}}>
-      <Row style={{ height:"100%", margin: 0 }} >
-
-        <ChatSideBar></ChatSideBar>
-
-        <ChatBox></ChatBox>
-
+    <Container fluid style={{ height: "100vh" }}>
+      
+      <Row style={{ height: "100%", margin: 0 }} >
+        <Col sm={3} style={{ borderRightStyle: "solid", alignItems: "center", height: "100%" }}>
+          <ChatSideBar></ChatSideBar>
+        </Col>
+        <Col sm={9} style={{ justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column', height: "100%" }}>
+          <ChatBox></ChatBox>
+        </Col>
       </Row>
 
     </Container>
