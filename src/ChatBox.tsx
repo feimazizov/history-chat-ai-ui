@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { Button, Col, Image, InputGroup, Form } from "react-bootstrap";
+import OpenAI from "openai";
 export default function ChatBox() {
+    const openai = new OpenAI({
+    baseURL: 'https://api.deepseek.com',
+    apiKey: import.meta.env.VITE_AI_SECRET,
+    dangerouslyAllowBrowser: true
+});
     const [input, setUserInput] = useState("");
     const [messages, setMessages] = useState<{ text: string; sender: "user" | "history-ai" }[]>([]);
     const [image, setShowImage] = useState(true);
 
-    function sendButton() {
+     async function sendButton() {
         if (input.trim() === "") return;
         const userMessage = { text: input, sender: "user" as "user" }
         setShowImage(false)
@@ -13,18 +19,44 @@ export default function ChatBox() {
         setMessages((prev) => [...prev, userMessage, thinkingMessage])
         setUserInput("");
 
-        setTimeout(() => {
+         try {
+      const res = await openai.chat.completions.create({
+        model: "deepseek-chat",
+        messages: [
+          { role: "system", content: "Ти си Христо Ботев и говориш като възрожденец." },
+          { role: "user", content: input }
+        ],
+        temperature: 0.7
+      });
+
+        const reply = res.choices[0]?.message?.content ?? "Нямам отговор.";
+
+         setTimeout(() => {
             setMessages((prev) => {
                 const updated = [...prev];
                 updated.pop();
-                updated.push({ text: "Thank you for message", sender: "history-ai" })
+                updated.push({ text: reply, sender: "history-ai" })
                 return updated;
             });
-        }, 3000);
+        }, 3000);   
 
+        
 
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated.pop();
+        updated.push({ text: "Грешка при свързване с DeepSeek API", sender: "history-ai" });
+        return updated;
+      });
     }
+}
 
+
+
+
+    
     return (
 
         <div style={{ textAlign: 'center', width: '80%' }}>
@@ -40,7 +72,7 @@ export default function ChatBox() {
                         style={{
                             display: "flex",
                             flexDirection: msg.sender === "user" ? "row-reverse" : "row",
-                            justifyContent: msg.sender === "user" ? "flex-start":"",
+                            justifyContent: msg.sender === "user" ? "flex-start" : "",
                             marginBottom: "10px",
                             alignItems: "center"
                         }}
@@ -48,17 +80,13 @@ export default function ChatBox() {
 
                         <Image src={msg.sender === "user" ? "user.png" : "botev.png"} roundedCircle style={{ width: "35px", height: "35px" }} />
 
-                        <div style={{maxWidth:"60%"}}>
+                        <div style={{ maxWidth: "60%" }}>
                             {msg.text}
                         </div>
                     </div>
                 ))}
 
-
-
-
             </div>
-
 
             <InputGroup className="mb-3" style={{ alignContent: "center" }}>
                 <Form.Control
@@ -76,5 +104,5 @@ export default function ChatBox() {
 
         </div>
 
-    )
-}
+            )
+    }
