@@ -1,17 +1,13 @@
 import { useState } from "react";
 import { Button, Col, Image, InputGroup, Form } from "react-bootstrap";
-import OpenAI from "openai";
+import axios from "axios";
 export default function ChatBox() {
-    const openai = new OpenAI({
-    baseURL: 'https://api.deepseek.com',
-    apiKey: import.meta.env.VITE_AI_SECRET,
-    dangerouslyAllowBrowser: true
-});
+
     const [input, setUserInput] = useState("");
     const [messages, setMessages] = useState<{ text: string; sender: "user" | "history-ai" }[]>([]);
     const [image, setShowImage] = useState(true);
 
-     async function sendButton() {
+    async function sendButton() {
         if (input.trim() === "") return;
         const userMessage = { text: input, sender: "user" as "user" }
         setShowImage(false)
@@ -19,44 +15,18 @@ export default function ChatBox() {
         setMessages((prev) => [...prev, userMessage, thinkingMessage])
         setUserInput("");
 
-         try {
-      const res = await openai.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: "Ти си Христо Ботев и говориш като възрожденец." },
-          { role: "user", content: input }
-        ],
-        temperature: 0.7
-      });
+        try {
+            const res = await axios.post("/api/ai/sendMessage", { message: input, });
+            const reply = res.data.reply;
 
-        const reply = res.choices[0]?.message?.content ?? "Нямам отговор.";
+            setMessages((prev) => [...prev, { text: reply, sender: "history-ai" }])
 
-         setTimeout(() => {
-            setMessages((prev) => {
-                const updated = [...prev];
-                updated.pop();
-                updated.push({ text: reply, sender: "history-ai" })
-                return updated;
-            });
-        }, 3000);   
-
-        
-
-    } catch (err) {
-      console.error(err);
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated.pop();
-        updated.push({ text: "Грешка при свързване с DeepSeek API", sender: "history-ai" });
-        return updated;
-      });
+        } catch (err) {
+            console.error(err);
+            setMessages((prev)=>[...prev,{text:"Грешка при свързване", sender: "history-ai"}])
+        }
     }
-}
 
-
-
-
-    
     return (
 
         <div style={{ textAlign: 'center', width: '80%' }}>
@@ -104,5 +74,5 @@ export default function ChatBox() {
 
         </div>
 
-            )
-    }
+    )
+}
