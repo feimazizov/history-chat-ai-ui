@@ -1,80 +1,163 @@
-import { useState } from "react";
-import { Button, Col, Image, InputGroup, Form } from "react-bootstrap";
-export default function ChatBox() {
+import { useState, useRef, useEffect } from "react";
+import { Button, Image, InputGroup, Form, Stack, Container } from "react-bootstrap";
+import axios from "axios";
+
+interface Message {
+    id: number;
+    text: string;
+    sender: "user" | "history-ai";
+}
+
+interface Hero {
+    name: string;
+    img: string;
+    key: string;
+}
+
+interface ChatBoxProps {
+    conversationId: number;
+    messages: Message[];
+    setMessages: (updater: (prev: Message[]) => Message[]) => void;
+    selectedHero: Hero | null;
+}
+
+export default function ChatBox({
+    conversationId,
+    messages,
+    setMessages,
+    selectedHero,
+}: ChatBoxProps) {
     const [input, setUserInput] = useState("");
-    const [messages, setMessages] = useState<{ text: string; sender: "user" | "history-ai" }[]>([]);
-    const [image, setShowImage] = useState(true);
+    const [showImage, setShowImage] = useState(true);
+    const chatRef = useRef<HTMLDivElement>(null);
 
-    function sendButton() {
-        if (input.trim() === "") return;
-        const userMessage = { text: input, sender: "user" as "user" }
-        setShowImage(false)
-        const thinkingMessage = { text: "Thinking", sender: "history-ai" as "history-ai" }
-        setMessages((prev) => [...prev, userMessage, thinkingMessage])
+    if (messages.length === 0) {
+        setMessages(prev => [{
+            id: Date.now(),
+            text: "Здравейте! Какво искате да ми питате?",
+            sender: "history-ai",
+        }]);
+    }
+
+    useEffect(() => {
+        chatRef.current?.scrollTo({
+            top: chatRef.current.scrollHeight,
+            behavior: "smooth",
+        });
+    }, [messages]);
+
+    async function sendButton() {
+        if (!selectedHero || input.trim() === "") return;
+
+        const userMessage: Message = {
+            id: Date.now(),
+            text: input,
+            sender: "user",
+        };
+
+        const thinkingMessage: Message = {
+            id: Date.now() + 1,
+            text: "Мисля...",
+            sender: "history-ai",
+        };
+
+        setMessages(prev => [...prev, userMessage, thinkingMessage]);
         setUserInput("");
+        setShowImage(false);
 
-        setTimeout(() => {
-            setMessages((prev) => {
-                const updated = [...prev];
-                updated.pop();
-                updated.push({ text: "Thank you for message", sender: "history-ai" })
-                return updated;
+        try {
+            const res = await axios.post<{ reply: string }>("/api/ai/sendMessage", {
+                message: input,
+                hero: selectedHero.key,
             });
-        }, 3000);
 
+            const reply = res.data.reply;
 
+            setMessages(prev =>
+                prev.map(msg =>
+                    msg.id === thinkingMessage.id ? { ...msg, text: reply } : msg
+                )
+            );
+        } catch {
+            setMessages(prev =>
+                prev.map(msg =>
+                    msg.id === thinkingMessage.id
+                        ? { ...msg, text: "⚠️ Грешка при свързване със сървъра." }
+                        : msg
+                )
+            );
+        }
+    }
+
+    if (!selectedHero) {
+        return (
+            <Container fluid className="d-flex flex-column h-100 p-3 bg-light text-center">
+                <div className="my-auto text-muted">
+                    <p className="fs-5">Избери герой, за да започнеш чат.</p>
+                </div>
+            </Container>
+        );
     }
 
     return (
+        <Container>
+            <>
+                <div
+                    ref={chatRef}
+                    className="overflow-auto bg-white rounded p-3 mb-3"
+                    style={{ flex: 1, minHeight: 0 }}
+                >
+                    <Stack gap={3}>
+                        {messages.map((msg) => (
+                            <Stack
+                                key={msg.id}
+                                direction="horizontal"
+                                className={`align-items-end ${msg.sender === "user" ? "flex-row-reverse" : ""}`}
+                                gap={2}
+                            >
+                                <Image
+                                    src={msg.sender === "user" ? "user.png" : selectedHero.img}
+                                    roundedCircle
+                                    width={40}
+                                    height={40}
+                                />
+                                <div
+                                    className={`p-2 rounded-4 shadow-sm ${msg.sender === "user"
+                                        ? "bg-success-subtle align-self-end"
+                                        : "bg-danger-subtle align-self-start"
+                                        }`}
+                                    style={{
+                                        width: "100%",
+                                        wordBreak: "break-word",
+                                    }}
+                                >
+                                    {msg.text}
+                                </div>
+                            </Stack>
+                        ))}
+                    </Stack>
+                </div>
 
-        <div style={{ textAlign: 'center', width: '80%' }}>
-            <div style={{ minHeight: "200px", maxHeight: "60vh" }}>
-                {image &&
-                    <Image src="\public\botev.png" width="50%" />
-                }
-
-            </div>
-            <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
-                {messages.map((msg, idx) => (
-                    <div key={idx}
-                        style={{
-                            display: "flex",
-                            flexDirection: msg.sender === "user" ? "row-reverse" : "row",
-                            justifyContent: msg.sender === "user" ? "flex-start":"",
-                            marginBottom: "10px",
-                            alignItems: "center"
+                <InputGroup>
+                    <Form.Control
+                        as="textarea"
+                        rows={2}
+                        style={{ height: "60px", resize: "none" }}
+                        value={input}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        placeholder={`Напиши съобщение за ${selectedHero.name}...`}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                sendButton();
+                            }
                         }}
-                    >
-
-                        <Image src={msg.sender === "user" ? "user.png" : "botev.png"} roundedCircle style={{ width: "35px", height: "35px" }} />
-
-                        <div style={{maxWidth:"60%"}}>
-                            {msg.text}
-                        </div>
-                    </div>
-                ))}
-
-
-
-
-            </div>
-
-
-            <InputGroup className="mb-3" style={{ alignContent: "center" }}>
-                <Form.Control
-                    rows={4}
-                    cols={100}
-                    as="textarea"
-                    value={input}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    placeholder='Здравей, аз съм Христо Ботев. Готов ли си да научиш за борбата за свободата?'
-                />
-                <Button variant="primary" onClick={sendButton} >
-                    Изпрати
-                </Button>
-            </InputGroup>
-
-        </div>
-
-    )
+                    />
+                    <Button variant="primary" onClick={sendButton} className="rounded">
+                        Изпрати
+                    </Button>
+                </InputGroup>
+            </>
+        </Container>
+    );
 }
