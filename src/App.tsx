@@ -68,9 +68,9 @@ export default function App() {
   const activeConversation = conversations.find(c => c.id === activeConversationId);
 
   return (
-    <Container fluid style={{ height: "100vh" }} className="p-0">
-      <Row className="h-100 g-0">
-        <Col style={{ width: "280px", flex: "0 0 280px" }} className="border-end p-0">
+    <Container>
+      <Row>
+        <Col xs={3} className="border-end p-0">
           <ChatSideBar
             conversations={conversations}
             activeConversationId={activeConversationId}
@@ -78,7 +78,7 @@ export default function App() {
             addConversation={addConversation}
           />
         </Col>
-        <Col className="p-0 d-flex flex-column h-100">
+        <Col xs={9} className="p-0 h-100">
           <ChatBox
             conversationId={activeConversation?.id ?? -1}
             messages={activeConversation?.messages ?? []}
