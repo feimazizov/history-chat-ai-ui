@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Button, Image, InputGroup, Form } from "react-bootstrap";
+import { Button, Image, InputGroup, Form, Stack, Container } from "react-bootstrap";
 import axios from "axios";
 
 interface Message {
@@ -18,7 +18,7 @@ interface ChatBoxProps {
     conversationId: number;
     messages: Message[];
     setMessages: (updater: (prev: Message[]) => Message[]) => void;
-    selectedHero: Hero;
+    selectedHero: Hero | null;
 }
 
 export default function ChatBox({
@@ -27,8 +27,8 @@ export default function ChatBox({
     setMessages,
     selectedHero,
 }: ChatBoxProps) {
-    const [input, setUserInput] = useState<string>("");
-    const [showImage, setShowImage] = useState<boolean>(true);
+    const [input, setUserInput] = useState("");
+    const [showImage, setShowImage] = useState(true);
     const chatRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export default function ChatBox({
     }, [messages]);
 
     async function sendButton() {
-        if (input.trim() === "") return;
+        if (!selectedHero || input.trim() === "") return;
 
         const userMessage: Message = {
             id: Date.now(),
@@ -70,9 +70,7 @@ export default function ChatBox({
                     msg.id === thinkingMessage.id ? { ...msg, text: reply } : msg
                 )
             );
-        } catch (err) {
-            console.error(err);
-
+        } catch {
             setMessages(prev =>
                 prev.map(msg =>
                     msg.id === thinkingMessage.id
@@ -83,140 +81,104 @@ export default function ChatBox({
         }
     }
 
-    return (
-        <div
-            style={{
-                display: "flex",
-                flexDirection: "column",
-                flex: 1,
-                height: "100%",
-                padding: "20px",
-                boxSizing: "border-box",
-                background: "#f5f5f5",
-                overflow: "hidden",
-            }}
-        >
+    if (!selectedHero) {
+        return (
+            <Container fluid className="d-flex flex-column h-100 p-3 bg-light text-center">
+                <div className="my-auto text-muted">
+                    <p className="fs-5">Избери герой, за да започнеш чат.</p>
+                </div>
+            </Container>
+        );
+    }
 
-            <div
-                ref={chatRef}
-                style={{
-                    flex: 1,
-                    overflowY: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                    padding: "20px",
-                    borderRadius: "12px",
-                    background: "#fff",
-                    marginBottom: "15px",
-                }}
-            >
-                {messages.length === 0 ? (
-                    <div style={{ textAlign: "center", color: "#555" }}>
-                        <Image
-                            src={selectedHero.img}
-                            style={{
-                                width: "150px",
-                                height: "auto",
-                                marginBottom: "15px",
+    return (
+        <Container fluid className="d-flex flex-column h-100 p-3">
+            {messages.length === 0 ? (
+                <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1">
+                    <div className="w-100" style={{ maxWidth: "600px" }}>
+                        <Image src={selectedHero.img} width={150} className="mb-3 mx-auto d-block" />
+                        <p className="fs-5 text-center">Здравей, аз съм {selectedHero.name}. Готов ли си да научиш за историята?</p>
+
+                        <InputGroup>
+                            <Form.Control
+                                as="textarea"
+                                rows={2}
+                                style={{ height: "60px", resize: "none" }}
+                                value={input}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                placeholder={`Напиши съобщение за ${selectedHero.name}...`}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        sendButton();
+                                    }
+                                }}
+                            />
+                            <Button variant="primary" onClick={sendButton} className="rounded">
+                                Изпрати
+                            </Button>
+                        </InputGroup>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <div
+                        ref={chatRef}
+                        className="overflow-auto bg-white rounded p-3 mb-3"
+                        style={{ flex: 1, minHeight: 0 }}
+                    >
+                        <Stack gap={3}>
+                            {messages.map((msg) => (
+                                <Stack
+                                    key={msg.id}
+                                    direction="horizontal"
+                                    className={`align-items-end ${msg.sender === "user" ? "flex-row-reverse" : ""}`}
+                                    gap={2}
+                                >
+                                    <Image
+                                        src={msg.sender === "user" ? "user.png" : selectedHero.img}
+                                        roundedCircle
+                                        width={40}
+                                        height={40}
+                                    />
+                                    <div
+                                        className={`p-2 rounded-4 shadow-sm ${msg.sender === "user"
+                                                ? "bg-success-subtle align-self-end"
+                                                : "bg-danger-subtle align-self-start"
+                                            }`}
+                                        style={{
+                                            width: "100%",
+                                            wordBreak: "break-word",
+                                        }}
+                                    >
+                                        {msg.text}
+                                    </div>
+                                </Stack>
+                            ))}
+                        </Stack>
+                    </div>
+
+                    <InputGroup>
+                        <Form.Control
+                            as="textarea"
+                            rows={2}
+                            style={{ height: "60px", resize: "none" }}
+                            value={input}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            placeholder={`Напиши съобщение за ${selectedHero.name}...`}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendButton();
+                                }
                             }}
                         />
-                        <p style={{ fontSize: "18px" }}>
-                            Здравей, аз съм {selectedHero.name}. Готов ли си да научиш за
-                            историята?
-                        </p>
-                    </div>
-                ) : (
-                    messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            style={{
-                                display: "flex",
-                                flexDirection: msg.sender === "user" ? "row-reverse" : "row",
-                                alignItems: "flex-end",
-                                gap: "10px",
-                                width: "100%",
-                            }}
-                        >
-                            <Image
-                                src={msg.sender === "user" ? "user.png" : selectedHero.img}
-                                roundedCircle
-                                style={{ width: "40px", height: "40px", flexShrink: 0 }}
-                            />
-                            <div
-                                style={{
-                                    maxWidth: "70%",
-                                    minWidth: "50px",
-                                    background:
-                                        msg.sender === "user" ? "#d1e7dd" : "#f8d7da",
-                                    padding: "10px 14px",
-                                    borderRadius: "18px",
-                                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
-                                    fontSize: "15px",
-                                    lineHeight: "1.4",
-                                    wordBreak: "break-word",
-                                    flexShrink: 0,
-                                    alignSelf:
-                                        msg.sender === "user" ? "flex-end" : "flex-start",
-                                }}
-                            >
-                                {msg.text}
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
-
-            {/* Hero image at bottom */}
-            {messages.length > 0 && showImage && (
-                <div
-                    style={{
-                        maxHeight: "180px",
-                        width: "100%",
-                        overflow: "hidden",
-                        marginBottom: "10px",
-                    }}
-                >
-                    <Image
-                        src={selectedHero.img}
-                        style={{
-                            height: "100%",
-                            maxWidth: "100%",
-                            objectFit: "contain",
-                            margin: "0 auto",
-                        }}
-                    />
-                </div>
+                        <Button variant="primary" onClick={sendButton} className="rounded">
+                            Изпрати
+                        </Button>
+                    </InputGroup>
+                </>
             )}
-
-            {/* Input area */}
-            <InputGroup style={{ gap: "10px" }}>
-                <Form.Control
-                    as="textarea"
-                    rows={2}
-                    value={input}
-                    onChange={(e) => setUserInput(e.target.value)}
-                    placeholder={`Напиши съобщение за ${selectedHero.name}...`}
-                    style={{
-                        fontSize: "16px",
-                        borderRadius: "12px",
-                        resize: "none",
-                    }}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            sendButton();
-                        }
-                    }}
-                />
-                <Button
-                    variant="primary"
-                    onClick={sendButton}
-                    style={{ minWidth: "120px", borderRadius: "12px" }}
-                >
-                    Изпрати
-                </Button>
-            </InputGroup>
-        </div>
+        </Container>
     );
 }
