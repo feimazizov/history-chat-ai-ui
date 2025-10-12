@@ -6,6 +6,7 @@ interface ChatSideBarProps {
     activeConversationId: number | null;
     setActiveConversationId: (id: number) => void;
     addConversation: () => void;
+    onOpenQuiz: () => void;
 }
 
 export default function ChatSideBar({
@@ -13,10 +14,11 @@ export default function ChatSideBar({
     activeConversationId,
     setActiveConversationId,
     addConversation,
+    onOpenQuiz,
 }: ChatSideBarProps) {
     return (
         <div className="d-flex flex-column min-vh-100 p-3">
-            <Button className="mb-2 w-100">Викторина</Button>
+            <Button className="mb-2 w-100" onClick={onOpenQuiz}>Викторина</Button>
             <Button variant="warning" className="mb-3 w-100">
                 Исторически факт
             </Button>

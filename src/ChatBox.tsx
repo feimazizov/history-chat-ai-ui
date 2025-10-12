@@ -97,7 +97,6 @@ export default function ChatBox({
                 <div className="d-flex flex-column justify-content-center align-items-center flex-grow-1">
                     <div className="w-100" style={{ maxWidth: "600px" }}>
                         <Image src={selectedHero.img} width={150} className="mb-3 mx-auto d-block" />
-                        <p className="fs-5 text-center">Здравей, аз съм {selectedHero.name}. Готов ли си да научиш за историята?</p>
 
                         <InputGroup>
                             <Form.Control
@@ -143,8 +142,8 @@ export default function ChatBox({
                                     />
                                     <div
                                         className={`p-2 rounded-4 shadow-sm ${msg.sender === "user"
-                                                ? "bg-success-subtle align-self-end"
-                                                : "bg-danger-subtle align-self-start"
+                                            ? "bg-success-subtle align-self-end"
+                                            : "bg-danger-subtle align-self-start"
                                             }`}
                                         style={{
                                             width: "100%",

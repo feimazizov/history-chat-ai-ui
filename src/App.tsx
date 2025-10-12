@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import ChatSideBar from "./ChatSideBar";
 import ChatBox from "./ChatBox";
+import QuizModal from "./QuizModal";
 import { Modal, Image, Container, Row, Col } from "react-bootstrap";
+
 
 interface Message {
   id: number;
@@ -67,6 +69,8 @@ export default function App() {
 
   const activeConversation = conversations.find(c => c.id === activeConversationId);
 
+  const [showQuizModal, setShowQuizModal] = useState(false);
+
   return (
     <Container fluid style={{ height: "100vh" }} className="p-0">
       <Row className="h-100 g-0">
@@ -76,6 +80,7 @@ export default function App() {
             activeConversationId={activeConversationId}
             setActiveConversationId={setActiveConversationId}
             addConversation={addConversation}
+            onOpenQuiz={() => setShowQuizModal(true)}
           />
         </Col>
         <Col className="p-0 d-flex flex-column h-100">
@@ -91,6 +96,8 @@ export default function App() {
           />
         </Col>
       </Row>
+
+      <QuizModal show={showQuizModal} onHide={() => setShowQuizModal(false)} heroKey={activeConversation?.hero?.key} />
 
       <Modal show={showHeroModal} onHide={() => setShowHeroModal(false)} centered>
         <Modal.Header closeButton>
